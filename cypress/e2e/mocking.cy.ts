@@ -14,13 +14,19 @@ const interceptOnce = (method: string, url: any, response) => {
   });
 };
 
+const 클릭함수 = (clickCount: number, callback: Function) => {
+  for (let i = 0; i < clickCount; i++) {
+    callback();
+  }
+};
+
 describe("template spec", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
   });
 
   it("첫 번째 글자가 있는가", () => {
-    cy.get("#root").should("have.text", "delectus aut autem");
+    cy.get("#root").find(".title").should("have.text", "delectus aut autem");
   });
 
   it("모킹 테스트1", () => {
@@ -91,5 +97,27 @@ describe("인터셉터 테스트", () => {
      * master를 검증하는데 쓰일 텐데 master 정보가 바뀐다면 테스트는 실패할 것이다. 그러니 response를 검증하는건 맞지 않는 테스트 방법으로 보인다.
      * 따라서 모킹 후의 동작이 원하는 동작인지만을 검증하면 될 것이라고 생각된다.
      */
+  });
+
+  it("count는 5를 초과할 수 없다.", () => {
+    interceptOnce("GET", "http://localhost:3000/api/counter/limit", {
+      limit: 5,
+    }).as("getCounterLimit");
+
+    cy.wait("@getCounterLimit"); // 가짜 응답을 기다림
+    클릭함수(10, () => cy.get(".increase-btn").click());
+
+    cy.get(".count").should("have.text", 5);
+  });
+
+  it("count는 7을 초과할 수 없다.", () => {
+    interceptOnce("GET", "http://localhost:3000/api/counter/limit", {
+      limit: 7,
+    }).as("getCounterLimit");
+
+    cy.wait("@getCounterLimit"); // 가짜 응답을 기다림
+    클릭함수(10, () => cy.get(".increase-btn").click());
+
+    cy.get(".count").should("have.text", 7);
   });
 });

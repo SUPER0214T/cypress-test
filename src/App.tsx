@@ -4,10 +4,15 @@ import "./App.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import axios from "axios";
-import masterSlice, { MasterSlice, setMaster } from "./redux/masterSlice";
+import masterSlice, {
+  MasterTodos,
+  setCounterLimit,
+  setMaster,
+} from "./redux/masterSlice";
+import Counter from "./Components/Counter/Counter";
 
 function App() {
-  const master = useSelector((state: RootState) => state.master);
+  const masterTodos = useSelector((state: RootState) => state.master.todos);
   const dispatch = useDispatch();
 
   const getTodos = async () => {
@@ -16,18 +21,32 @@ function App() {
     );
   };
 
+  const getLimit = async () => {
+    return fetch("http://localhost:3000//api/counter/limit").then((result) =>
+      result.json()
+    );
+  };
+
   useEffect(() => {
-    getTodos().then((result: MasterSlice) => {
+    getTodos().then((result: MasterTodos) => {
       dispatch(setMaster(result));
     });
+
+    getLimit()
+      .then((response: { limit: number }) =>
+        dispatch(setCounterLimit(response))
+      )
+      .catch(console.error);
   }, []);
 
   return (
     <div className="App">
-      {master.map((todo) => {
+      <Counter />
+
+      {masterTodos.map((todo) => {
         return (
           <div>
-            <div>{todo.title}</div>
+            <div className="title">{todo.title}</div>
             <hr />
           </div>
         );

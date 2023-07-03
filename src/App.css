@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+.counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.count-btn {
+  width: 100px;
+  height: 100px;
+  font-size: 2rem;
+  background-color: gold;
+  margin: 20px;
+}
+
+.count {
+  font-size: 2rem;
+}
