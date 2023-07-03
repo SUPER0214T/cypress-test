@@ -1,5 +1,19 @@
 /// <reference types="Cypress" />
 
+const interceptOnce = (method: string, url: any, response) => {
+  // I am using "count" to show how easy you can implement
+  // different responses for different interceptors
+  let count = 0;
+  return cy.intercept(method, url, (req) => {
+    count += 1;
+    if (count < 2) {
+      req.reply(response);
+    } else {
+      // do nothing
+    }
+  });
+};
+
 describe("template spec", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
@@ -43,6 +57,7 @@ describe("인터셉터 테스트", () => {
 
   it("모킹 테스트", () => {
     // 요청에 대한 가짜 응답을 설정
+    // given
     const mockingData = [
       {
         userId: 1,
@@ -58,14 +73,23 @@ describe("인터셉터 테스트", () => {
       },
     ];
 
-    cy.intercept("https://jsonplaceholder.typicode.com/todos", mockingData).as(
-      "getMockedResponse"
-    );
+    // when
+    interceptOnce(
+      "GET",
+      "https://jsonplaceholder.typicode.com/todos",
+      mockingData
+    ).as("getMockedResponse");
 
     cy.wait("@getMockedResponse"); // 가짜 응답을 기다림
 
+    // then
     cy.get("#root")
       .contains("두 번재 todo")
       .should("have.text", "두 번재 todo");
+    /**
+     * @description reload로 request가 모킹되지 않는 상태인지 확인하려고 했는데 이건 좋지 않은 방법처럼 보인다.
+     * master를 검증하는데 쓰일 텐데 master 정보가 바뀐다면 테스트는 실패할 것이다. 그러니 response를 검증하는건 맞지 않는 테스트 방법으로 보인다.
+     * 따라서 모킹 후의 동작이 원하는 동작인지만을 검증하면 될 것이라고 생각된다.
+     */
   });
 });
